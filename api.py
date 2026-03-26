@@ -363,8 +363,13 @@ def stats():
 
 # ── Start ─────────────────────────────────────────────────────────────────────
 
-if __name__ == "__main__":
+# Run init_db() at module load so gunicorn picks it up too
+try:
     init_db()
+except Exception as _e:
+    print(f"WARNING: init_db failed: {_e}", file=sys.stderr)
+
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     print(f"RAIS CRM API running on port {port}")
     app.run(host="0.0.0.0", port=port, debug=False)
