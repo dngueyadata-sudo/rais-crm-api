@@ -1,6 +1,6 @@
-name: Apollo Lead Ingestion
+name: Weekly Lead Ingestion (Hunter.io)
 
-# Runs every Monday at 9:00 AM UTC (4 AM EST)
+# Runs every Monday at 9:00 AM UTC (4 AM EST / 5 AM EDT)
 # Trigger manually anytime from the Actions tab
 on:
   schedule:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   ingest:
-    name: Ingest leads from Apollo.io
+    name: Ingest leads from Hunter.io
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -26,9 +26,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Apollo ingestion
+      - name: Run Hunter.io ingestion
         env:
-          APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
+          HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
           CRM_API_URL:    ${{ secrets.CRM_API_URL }}
-          LEADS_PER_RUN:  "50"
-        run: python3 apollo_ingest.py
+          LEADS_PER_RUN:  "25"
+          DOMAIN_BATCH:   "10"
+        run: python3 hunter_ingest.py
