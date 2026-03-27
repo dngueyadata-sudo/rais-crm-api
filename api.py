@@ -152,6 +152,17 @@ INDUSTRY_SCORES = [
 SIZE_SCORES = {"1000-10000":20,"10000+":18,"500-1000":15,"100-500":10,"<100":12}
 MATURITY_SCORES = {"deployed-no-governance":15,"building":14,"exploring":12,"mature-with-gaps":10,"mature":5}
 
+# Consulting-engagement signals: title keywords that indicate the person
+# has been exposed to strategic advisory / transformation work and would
+# recognise the value of an external consultant.
+CONSULTING_SIGNAL_BONUS = 8
+CONSULTING_SIGNAL_KEYWORDS = [
+    "transformation","strategy","strategic","innovation","change management",
+    "digital transformation","process improvement","organizational change",
+    "business development","growth","advisory","continuous improvement",
+    "enterprise architecture","program management","pmo",
+]
+
 def score_icp(title, industry, size, maturity):
     t = (title or "").lower(); i = (industry or "").lower(); pts = 0
     for score, kws in TITLE_SCORES:
@@ -160,6 +171,9 @@ def score_icp(title, industry, size, maturity):
         if any(k in i for k in kws): pts += score; break
     pts += SIZE_SCORES.get(size or "", 0)
     pts += MATURITY_SCORES.get(maturity or "", 0)
+    # Bonus for consulting-engagement signals in title
+    if any(kw in t for kw in CONSULTING_SIGNAL_KEYWORDS):
+        pts += CONSULTING_SIGNAL_BONUS
     total = min(pts, 100)
     tier = "tier1" if total>=80 else "tier2" if total>=60 else "tier3" if total>=40 else "nurture"
     return total, tier

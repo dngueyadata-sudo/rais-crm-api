@@ -31,10 +31,12 @@ log = logging.getLogger("smb_ingest")
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-HUNTER_API_KEY = os.environ.get("HUNTER_API_KEY", "")
-CRM_API_URL    = os.environ.get("CRM_API_URL", "https://rais-crm-api.onrender.com").rstrip("/")
-LEADS_PER_RUN  = int(os.environ.get("LEADS_PER_RUN", "20"))
-DOMAIN_BATCH   = int(os.environ.get("DOMAIN_BATCH", "12"))
+HUNTER_API_KEY  = os.environ.get("HUNTER_API_KEY", "")
+CRM_API_URL     = os.environ.get("CRM_API_URL", "https://rais-crm-api.onrender.com").rstrip("/")
+LEADS_PER_RUN   = int(os.environ.get("LEADS_PER_RUN", "20"))
+DOMAIN_BATCH    = int(os.environ.get("DOMAIN_BATCH", "12"))
+MAX_PER_DOMAIN  = int(os.environ.get("MAX_PER_DOMAIN", "2"))   # max leads per company
+MIN_ICP_SCORE   = int(os.environ.get("MIN_ICP_SCORE", "30"))   # SMB threshold slightly lower
 
 if not HUNTER_API_KEY:
     log.error("HUNTER_API_KEY is not set. Exiting.")
@@ -269,8 +271,13 @@ def main():
         log.info(f"Searching: {domain}")
         contacts = search_domain(domain)
 
+        domain_count = 0   # cap leads per domain for company diversity
+
         for item in contacts:
             if ingested >= LEADS_PER_RUN:
+                break
+            if domain_count >= MAX_PER_DOMAIN:
+                log.debug(f"  Domain cap ({MAX_PER_DOMAIN}) reached for {domain}")
                 break
 
             c     = item["contact"]
@@ -304,11 +311,21 @@ def main():
             result = post_lead(lead)
             if result and result[0]:
                 lid, score, tier = result
+                # Enforce minimum ICP score
+                if score < MIN_ICP_SCORE:
+                    log.debug(f"  Skip (score {score} < min {MIN_ICP_SCORE}): {lead['name']}")
+                    try:
+                        requests.delete(f"{CRM_API_URL}/api/leads/{lid}", timeout=10)
+                    except Exception:
+                        pass
+                    skipped += 1
+                    continue
                 log.info(
                     f"  [{ingested+1}/{LEADS_PER_RUN}] {lead['name']} @ {lead['company']} "
                     f"| {lead['title']} | {tier} ({score}/100) | id={lid}"
                 )
                 ingested += 1
+                domain_count += 1
                 existing_emails.add(email_key)
                 existing_combos.add(combo_key)
                 time.sleep(0.1)
