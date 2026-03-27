@@ -122,10 +122,15 @@ def init_db():
 TITLE_SCORES = [
     (35, ["chief risk officer","cro","chief data officer","cdo","chief ai officer",
           "caio","head of ai governance","head of ai","director of ai governance"]),
-    (30, ["chief digital officer","chief compliance officer","cco","chief analytics officer"]),
+    (32, ["owner","founder","co-founder","cofounder","proprietor",  # SMB decision-makers
+          "chief executive officer","ceo","president","managing director","managing partner",
+          "principal","partner"]),
+    (30, ["chief digital officer","chief compliance officer","cco","chief analytics officer",
+          "chief operating officer","coo","chief technology officer","cto"]),
     (28, ["vp data","vp analytics","vp ai","vice president data","vice president analytics",
           "vice president ai","director of ai","director of data science"]),
-    (22, ["director of data","director analytics","vp strategy","vp digital"]),
+    (22, ["director of data","director analytics","vp strategy","vp digital",
+          "director of technology","director of operations","director of finance"]),
     (20, ["general counsel","deputy general counsel","vp legal","head of legal"]),
     (18, ["ciso","chief information security","vp risk","head of risk"]),
     (14, ["director","vp","vice president"]),
@@ -134,13 +139,17 @@ TITLE_SCORES = [
 INDUSTRY_SCORES = [
     (30, ["cpg","consumer packaged goods","consumer goods","fmcg","retail","e-commerce","ecommerce"]),
     (25, ["financial services","banking","insurance","asset management","wealth management",
-          "investment","private equity","hedge fund","fintech"]),
-    (22, ["healthcare","pharma","pharmaceutical","life sciences","biotech"]),
-    (20, ["manufacturing","industrial","supply chain","logistics"]),
-    (15, ["technology","software","saas","media","telecom"]),
-    (10, ["government","nonprofit","education","real estate"]),
+          "investment","private equity","hedge fund","fintech","accounting","bookkeeping",
+          "financial advisory","tax","payroll"]),
+    (22, ["healthcare","pharma","pharmaceutical","life sciences","biotech",
+          "medical","dental","clinic","therapy","wellness"]),
+    (20, ["manufacturing","industrial","supply chain","logistics","distribution",
+          "construction","engineering","fabrication"]),
+    (15, ["technology","software","saas","media","telecom","staffing","consulting"]),
+    (10, ["government","nonprofit","education","real estate","legal","law"]),
 ]
-SIZE_SCORES = {"1000-10000":20,"10000+":18,"500-1000":15,"100-500":10,"<100":5}
+# SMB size bucket gets boosted score since small businesses are primary new target
+SIZE_SCORES = {"1000-10000":20,"10000+":18,"500-1000":15,"100-500":10,"<100":12}
 MATURITY_SCORES = {"deployed-no-governance":15,"building":14,"exploring":12,"mature-with-gaps":10,"mature":5}
 
 def score_icp(title, industry, size, maturity):
