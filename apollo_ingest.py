@@ -86,7 +86,6 @@ def search_apollo(page: int = 1, per_page: int = 50) -> list:
     """
     url = "https://api.apollo.io/v1/mixed_people/search"
     payload = {
-        "api_key":                     APOLLO_API_KEY,
         "per_page":                    per_page,
         "page":                        page,
         "person_titles":               TARGET_TITLES,
@@ -100,7 +99,11 @@ def search_apollo(page: int = 1, per_page: int = 50) -> list:
     try:
         resp = requests.post(
             url,
-            headers={"Content-Type": "application/json", "Cache-Control": "no-cache"},
+            headers={
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                "X-Api-Key": APOLLO_API_KEY,   # key must be in header per Apollo docs
+            },
             json=payload,
             timeout=30,
         )
@@ -126,7 +129,7 @@ def get_existing_leads() -> tuple[set, set]:
     leads that are already in the database.
     """
     try:
-        resp = requests.get(f"{CRM_API_URL}/api/leads", timeout=30)
+        resp = requests.get(f"{CRM_API_URL}/api/leads", timeout=60)  # 60s for Render cold starts
         resp.raise_for_status()
         leads = resp.json()
         emails  = {l.get("email", "").lower().strip() for l in leads if l.get("email")}
