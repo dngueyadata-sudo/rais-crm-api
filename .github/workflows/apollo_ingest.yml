@@ -1,0 +1,34 @@
+name: Apollo Lead Ingestion
+
+# Runs every Monday at 9:00 AM UTC (4 AM EST)
+# Trigger manually anytime from the Actions tab
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  ingest:
+    name: Ingest leads from Apollo.io
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Apollo ingestion
+        env:
+          APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
+          CRM_API_URL:    ${{ secrets.CRM_API_URL }}
+          LEADS_PER_RUN:  "50"
+        run: python3 apollo_ingest.py
