@@ -1,0 +1,36 @@
+name: Weekly SMB Lead Ingestion (Hunter.io)
+
+# Runs every Thursday at 9:00 AM UTC — offset from enterprise run (Monday)
+# so Hunter.io credits are spread across the week.
+# Trigger manually anytime from the Actions tab.
+on:
+  schedule:
+    - cron: "0 9 * * 4"
+  workflow_dispatch:
+
+jobs:
+  ingest:
+    name: Ingest SMB leads from Hunter.io
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run SMB ingestion
+        env:
+          HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
+          CRM_API_URL:    ${{ secrets.CRM_API_URL }}
+          LEADS_PER_RUN:  "20"
+          DOMAIN_BATCH:   "12"
+        run: python3 smb_ingest.py
